@@ -1,0 +1,19 @@
+{
+	"certPath" : "/path/to/cert/$domain/.crt_or_.key_or_.ca",
+	"defaultDomain" : "www.example.com",
+	"site" : {
+		"example.com" : {
+			"host" : "192.168.1.2",
+			"port" : 1443,
+			"https": true,
+			"keyPath" : "/path_to_key/or/omit_and_load_from_certpath",
+			"crtPath" : "/path_to_cert/or/omit_and_load_from_certpath",
+			"caPath" : "/path_to_ca/or/omit_and_load_from_certpath/or/omit"
+		},
+		"www.example.com" : {
+			"host"  : "internal.example.com",
+			"port"  : 80,
+			"https" : false
+		}
+	}
+}
