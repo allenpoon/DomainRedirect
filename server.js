@@ -3,19 +3,17 @@ var fs      = require('fs'),
     net     = require('net'),
     crypto  = require('crypto'),
     cluster = require('cluster'),
-    conf    = require('./conf.json'),
-    numOfCPU= require('os').cpus().length;
+    conf    = require('./conf.json');
 
 var noOp = function(){};
 var certCache = {};
 var getCert = function(domain){
-	var key , crt, ca;
+	var key, crt, ca;
 	if(conf.site[domain]){
 		if(conf.site[domain].keyPath){
 			try{
 				key = fs.readFileSync(conf.site[domain].keyPath);
-			}catch(e){
-			}
+			}catch(e){}
 		}
 		if(conf.site[domain].crtPath){
 			try{
@@ -80,20 +78,20 @@ var httpsServerOptions = (function(){
 	return options;
 })();
 
-var reqOption = {
-	rejectUnauthorized : false
-}
-
 if(cluster.isMaster){
 	console.log('Master on (PID='+process.pid+')');
-	for(var i=0; i<numOfCPU; i++){
+	for(var i=0; i<require('os').cpus().length; i++){
 		cluster.fork();
 	}
 	cluster.on('listening', function(worker, address){
 		console.log('Worker (PID='+worker.process.pid+') listening at (Address='+address.address+':'+address.port+')');
 	});
 	cluster.on('exit', function(worker, code, signal){
-		
+		console.log('Worker (PID='+worker.process.pid+') Closed' + (code ? ' Unexpectedly (Code='+code+')':''));
+		if(code){
+			console.log('Restarting Worker');
+			cluster.fork();
+		}
 	});
 }else{
 	tls.createServer(httpsServerOptions, function(socket){
