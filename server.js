@@ -1,8 +1,10 @@
-var fs    = require('fs'),
-    tls   = require('tls'),
-    net   = require('net'),
-    crypto= require('crypto'),
-    conf  = require('./conf.json');
+var fs      = require('fs'),
+    tls     = require('tls'),
+    net     = require('net'),
+    crypto  = require('crypto'),
+    cluster = require('cluster'),
+    conf    = require('./conf.json'),
+    numOfCPU= require('os').cpus().length;
 
 var noOp = function(){};
 var certCache = {};
@@ -81,20 +83,36 @@ var httpsServerOptions = (function(){
 var reqOption = {
 	rejectUnauthorized : false
 }
-tls.createServer(httpsServerOptions, function(socket){
-	if(conf.site[socket.servername]){
-		socket.on('end', noOp);
-		var remote = (conf.site[socket.servername].https ? tls : net).connect(
-			{
-				port: conf.site[socket.servername].port,
-				host: conf.site[socket.servername].host,
-				rejectUnauthorized: false
-			},
-			function(){
-				remote.pipe(socket).pipe(remote);
-			}
-		);
-	}else{
-		socket.end();
+
+if(cluster.isMaster){
+	console.log('Master on (PID='+process.pid+')');
+	for(var i=0; i<numOfCPU; i++){
+		cluster.fork();
 	}
-}).on('error', function(err){console.error('HTTPS server error:',err)}).listen(443);
+	cluster.on('listening', function(worker, address){
+		console.log('Worker (PID='+worker.process.pid+') listening at (Address='+address.address+':'+address.port+')');
+	});
+	cluster.on('exit', function(worker, code, signal){
+		
+	});
+}else{
+	tls.createServer(httpsServerOptions, function(socket){
+		if(conf.site[socket.servername]){
+			var remote = (conf.site[socket.servername].https ? tls : net).connect(
+				{
+					port: conf.site[socket.servername].port,
+					host: conf.site[socket.servername].host,
+					rejectUnauthorized: false
+				},
+				function(){
+					remote.pipe(socket).pipe(remote);
+				}
+			);
+			socket.on('end'  , noOp);
+			socket.on('error', noOp);
+			remote.on('error', noOp);
+		}else{
+			socket.end();
+		}
+	}).on('error', function(err){console.error('HTTPS server error:',err)}).listen(3443);
+}

@@ -1,0 +1,29 @@
+{
+  "name": "DomainRedirect",
+  "version": "0.0.0",
+  "description": "Redirect HTTPS request from external network to internal network",
+  "main": "server.js",
+  "dependencies": {
+    "cluster": "~0.7.7",
+    "crypto": "~0.0.3",
+    "fs": "~0.0.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "node server.js",
+    "start": "forever start server.js",
+    "stop": "forever stop server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "../../git/ProxyByDomainName/"
+  },
+  "keywords": [
+    "Revert",
+    "Proxy",
+    "Domain",
+    "Redirect"
+  ],
+  "author": "Allen",
+  "license": "BSD-2-Clause"
+}
