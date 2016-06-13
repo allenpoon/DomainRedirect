@@ -79,6 +79,7 @@ var httpsServerOptions = (function(){
 })();
 
 if(cluster.isMaster){
+	var MaxTry = conf.maxTryStart || 100;
 	console.log('Master on (PID='+process.pid+')');
 	for(var i=0; i<require('os').cpus().length; i++){
 		cluster.fork();
@@ -88,9 +89,10 @@ if(cluster.isMaster){
 	});
 	cluster.on('exit', function(worker, code, signal){
 		console.log('Worker (PID='+worker.process.pid+') Closed' + (code ? ' Unexpectedly (Code='+code+')':''));
-		if(code){
+		if(code && maxTryStart){
+			maxTryStart--;
 			console.log('Restarting Worker');
-			cluster.fork();
+			setTimeout(cluster.fork, ( conf.retryWait || 60 ) * 1000);
 		}
 	});
 }else{

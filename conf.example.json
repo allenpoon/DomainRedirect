@@ -1,6 +1,8 @@
 {
-	"certPath" : "/path/to/cert/$domain/.crt_or_.key_or_.ca",
+	"certPath" : "/path/to/cert/$domain/included_.crt_.key_.ca",
 	"defaultDomain" : "www.example.com",
+	"maxTryStart" : 60,
+	"retryWait" : 60,
 	"site" : {
 		"example.com" : {
 			"host" : "192.168.1.2",
