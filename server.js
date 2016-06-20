@@ -49,15 +49,15 @@ var getCert = function(domain){
 				"Cert Not Found: \n"
 				+ "\tDomain: " + domain + "\n"
 				+ "\tPath:\n"
-				+ "\t\t" + conf.site[domain].keyPath + ' or ' + conf.certPath + '/' + domain + '/.key'
-				+ "\t\t" + conf.site[domain].crtPath + ' or ' + conf.certPath + '/' + domain + '/.crt'
+				+ "\t\t" + (!!conf.site[domain].keyPath ? conf.site[domain].keyPath + ' or ' : '' ) + conf.certPath + '/' + domain + '/.key'
+				+ "\t\t" + (!!conf.site[domain].crtPath ? conf.site[domain].crtPath + ' or ' : '' ) + conf.certPath + '/' + domain + '/.crt'
 			);
 			return getCert(conf.defaultDomain);
 		}else{
 			throw new Error(
 				'Default Cert Not Found Exception: ' + "\n"
-				+ (!key ? conf.site[domain].keyPath + ' or ' + conf.certPath + '/' + domain + '/.key' + "\n" : '')
-				+ (!crt ? conf.site[domain].crtPath + ' or ' + conf.certPath + '/' + domain + '/.crt' + "\n" : '')
+				+ (!key ? (!!conf.site[domain].keyPath ? conf.site[domain].keyPath + ' or ' : '' ) + conf.certPath + '/' + domain + '/.key' + "\n" : '')
+				+ (!crt ? (!!conf.site[domain].crtPath ? conf.site[domain].crtPath + ' or ' : '' ) + conf.certPath + '/' + domain + '/.crt' + "\n" : '')
 			);
 		}
 	}
@@ -89,8 +89,8 @@ if(cluster.isMaster){
 	});
 	cluster.on('exit', function(worker, code, signal){
 		console.log('Worker (PID='+worker.process.pid+') Closed' + (code ? ' Unexpectedly (Code='+code+')':''));
-		if(code && maxTryStart){
-			maxTryStart--;
+		if(code && conf.MaxTry){
+			MaxTry--;
 			console.log('Restarting Worker');
 			setTimeout(cluster.fork, ( conf.retryWait || 60 ) * 1000);
 		}
