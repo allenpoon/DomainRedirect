@@ -89,7 +89,7 @@ if(cluster.isMaster){
 	});
 	cluster.on('exit', function(worker, code, signal){
 		console.log('Worker (PID='+worker.process.pid+') Closed' + (code ? ' Unexpectedly (Code='+code+')':''));
-		if(code && conf.MaxTry){
+		if(code && MaxTry){
 			MaxTry--;
 			console.log('Restarting Worker');
 			setTimeout(cluster.fork, ( conf.retryWait || 60 ) * 1000);
