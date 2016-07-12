@@ -1,4 +1,6 @@
 {
+	"httpPort" : "80",
+	"httpsPort" : "443",
 	"certPath" : "/path/to/cert/$domain/included_.crt_.key_.ca",
 	"defaultDomain" : "www.example.com",
 	"maxTryStart" : 60,

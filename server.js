@@ -9,22 +9,22 @@ var noOp = function(){};
 var certCache = {};
 var getCert = function(domain){
 	var key, crt, ca;
-	if(conf.site[domain]){
-		if(conf.site[domain].keyPath){
-			try{
-				key = fs.readFileSync(conf.site[domain].keyPath);
-			}catch(e){}
-		}
-		if(conf.site[domain].crtPath){
-			try{
-				crt = fs.readFileSync(conf.site[domain].crtPath);
-			}catch(e){}
-		}
-		if(conf.site[domain].caPath){
-			try{
-				ca = fs.readFileSync(conf.site[domain].caPath);
-			}catch(e){}
-		}
+	if( !conf.site[domain] )	throw new Error('Domain Not Set Exception: Domain: ' + domain);
+
+	if(conf.site[domain].keyPath){
+		try{
+			key = fs.readFileSync(conf.site[domain].keyPath);
+		}catch(e){}
+	}
+	if(conf.site[domain].crtPath){
+		try{
+			crt = fs.readFileSync(conf.site[domain].crtPath);
+		}catch(e){}
+	}
+	if(conf.site[domain].caPath){
+		try{
+			ca = fs.readFileSync(conf.site[domain].caPath);
+		}catch(e){}
 	}
 	if(conf.certPath){
 		if(!key){
@@ -114,5 +114,26 @@ if(cluster.isMaster){
 		}else{
 			socket.end();
 		}
-	}).on('error', function(err){console.error('HTTPS server error:',err)}).listen(443);
+	}).on('error', function(err){console.error('HTTPS server error:',err)}).listen(conf.httpsPort);
+
+	net.createServer(function(socket){
+		socket.on('data', function(msg){
+			msg = msg.toString().split('\r\n');
+			var host, path = msg[0].split(' ')[1], proto=msg[0].split(' ')[2];
+			for(var i=1; i< msg.length && !host; i++){
+				var key_val = msg[i].split(':');
+				if (key_val[0].search(/^host/i) === 0){
+					host = key_val[1].replace(" ", "");
+				}
+			}
+			socket.end(
+				proto + ' 301' + "\r\n"
+				+ 'Location: https://' + host + path + "\r\n"
+				+ "\r\n"
+			);
+		});
+		socket.on('end', noOp);
+		socket.on('error', noOp);
+
+	}).on('error', function(err){console.error('HTTP server error:',err)}).listen(conf.httpPort);
 }
