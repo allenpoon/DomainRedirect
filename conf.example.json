@@ -1,11 +1,28 @@
 {
-	"httpPort" : 80,
-	"httpsPort" : 443,
+	"httpBind" : [["::1", 80], ["0.0.0.0", 80]],
+	"httpsBind": [["::1",443], ["0.0.0.0",443]],
 	"certPath" : "/path/to/cert/$domain/included_.crt_.key_.ca/",
 	"defaultDomain" : "www.example.com",
 	"maxTryStart" : 60,
 	"retryWait" : 60,
 	"sslSecureOptions" : ["SSL_OP_NO_SSLv2", "SSL_OP_NO_SSLv3", "SSL_OP_NO_TLSv1", "SSL_OP_NO_TLSv1_1"],
+	"sslCiphers" : [
+		"ECDHE",
+		"DHE",
+		"RSA",
+		"AES",
+		"3DES",
+		"!RC4",
+		"!MD5",
+		"!DES",
+		"!MD5",
+		"!aNULL",
+		"!eNULL",
+		"!EXPORT",
+		"!PSK",
+		"!SRP",
+		"!CAMELLIA"
+	],
 	"site" : {
 		"example.com" : {
 			"host" : "192.168.1.2",

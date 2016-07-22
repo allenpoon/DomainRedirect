@@ -21,14 +21,16 @@ if(cluster.isMaster){
 }else{
 	var fs      = require('fs'),
 	    tls     = require('tls'),
-	    net     = require('net'),
-	    crypto  = require('crypto');
+	    net     = require('net');
 
 	var noOp = function(){};
 	var certCache = {};
 	var getCert = function(domain){
 		var key, crt, ca;
-		if( !conf.site[domain] )	throw new Error('Domain Not Set Exception: Domain: ' + domain);
+		if( !conf.site[domain] ){
+			console.log('Domain Not Set Exception: Domain: ' + domain);
+			return null;
+		}
 
 		if(conf.site[domain].keyPath){
 			try{
@@ -86,9 +88,9 @@ if(cluster.isMaster){
 			ca : ca
 		};
 	}
-	var getCertContext = function(domain){
-		if(!certCache[domain]) certCache[domain] = crypto.createCredentials(getCert(domain)).context;
-		return certCache[domain];
+	var getCertContext = function(domain, cb){
+		if(!certCache[domain]) certCache[domain] = tls.createSecureContext(getCert(domain));
+		cb(null, certCache[domain]);
 	}
 
 	var httpsServerOptions = (function(){
@@ -104,10 +106,14 @@ if(cluster.isMaster){
 				options.secureOptions |= constants[conf.sslSecureOptions[i]];
 			}
 		}
+
+		if(conf.sslCiphers.length){
+			options.ciphers = conf.sslCiphers.join(':');
+		}
 		return options;
 	})();
 
-	tls.createServer(httpsServerOptions, function(socket){
+	var https = tls.createServer(httpsServerOptions, function(socket){
 		if(conf.site[socket.servername]){
 			var remote = (conf.site[socket.servername].https ? tls : net).connect(
 				{
@@ -125,9 +131,14 @@ if(cluster.isMaster){
 		}else{
 			socket.end();
 		}
-	}).on('error', function(err){console.error('HTTPS server error:',err)}).listen(conf.httpsPort);
+	}).on('error', function(err){console.error('HTTPS server error:',err)});
 
-	net.createServer(function(socket){
+	for(var i=0; i<conf.httpsBind.length; i++){
+		https.listen(conf.httpsBind[i][1], conf.httpsBind[i][0]);
+	}
+
+
+	var http = net.createServer(function(socket){
 		socket.on('data', function(msg){
 			msg = msg.toString().split('\r\n');
 			var host, path = msg[0].split(' ')[1], proto=msg[0].split(' ')[2];
@@ -146,5 +157,9 @@ if(cluster.isMaster){
 		socket.on('end', noOp);
 		socket.on('error', noOp);
 
-	}).on('error', function(err){console.error('HTTP server error:',err)}).listen(conf.httpPort);
+	}).on('error', function(err){console.error('HTTP server error:',err)});
+
+	for(var i=0; i<conf.httpsBind.length; i++){
+		http.listen(conf.httpBind[i][1], conf.httpBind[i][0]);
+	}
 }

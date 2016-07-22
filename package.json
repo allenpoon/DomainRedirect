@@ -1,6 +1,6 @@
 {
   "name": "DomainRedirect",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Redirect HTTPS request from external network to internal network",
   "main": "server.js",
   "dependencies": {
@@ -12,7 +12,8 @@
   "scripts": {
     "test": "node server.js",
     "start": "forever start server.js",
-    "stop": "forever stop server.js"
+    "stop": "forever stop server.js",
+    "status": "forever list"
   },
   "repository": {
     "type": "git",
