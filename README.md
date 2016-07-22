@@ -9,6 +9,7 @@
 	"defaultDomain" : "www.example.com",
 	"maxTryStart" : 60,
 	"retryWait" : 60,
+	"sslSecureMethod" : "SSLv23_server_method",
 	"sslSecureOptions" : ["SSL_OP_NO_SSLv2", "SSL_OP_NO_SSLv3", "SSL_OP_NO_TLSv1", "SSL_OP_NO_TLSv1_1"],
 	"sslCiphers" : [
 		"ECDHE",
