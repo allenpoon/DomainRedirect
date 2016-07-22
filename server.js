@@ -95,21 +95,40 @@ if(cluster.isMaster){
 
 	var httpsServerOptions = (function(){
 		var options = getCert(conf.defaultDomain);
+
 		options.SNICallback = getCertContext;
-		options.secureProtocol = 'SSLv23_method';
+
+		switch(conf.sslSecureMethod){
+			case 'SSLv23_method':
+			case 'SSLv23_server_method':
+			case 'TLSv1_method':
+			case 'TLSv1_server_method':
+			case 'TLSv1_1_method':
+			case 'TLSv1_1_server_method':
+			case 'TLSv1_2_method':
+			case 'TLSv1_2_server_method':
+				options.secureProtocol = conf.sslSecureMethod;
+				break;
+			default:
+				console.log("Unknow Secure method '"+conf.sslSecureMethod+"', Using 'SSLv23_server_method'");
+				options.secureProtocol = "SSLv23_server_method";
+		}
 
 		var constants = require('constants');
 
 		options.secureOptions = 0;
 		for(var i=0; i<conf.sslSecureOptions.length; i++){
-			if(!!conf.sslSecureOptions[i].match(/^SSL_OP_/)){
+			if(!!conf.sslSecureOptions[i].match(/^SSL_OP_/) && !!constants[conf.sslSecureOptions[i]]){
 				options.secureOptions |= constants[conf.sslSecureOptions[i]];
+			}else{
+				console.log("Unknow Secure Option '"+conf.sslSecureOptions[i]+"'");
 			}
 		}
 
-		if(conf.sslCiphers.length){
+		if(!!conf.sslCiphers && conf.sslCiphers.length){
 			options.ciphers = conf.sslCiphers.join(':');
 		}
+
 		return options;
 	})();
 

@@ -3,11 +3,7 @@
   "version": "1.0.0",
   "description": "Redirect HTTPS request from external network to internal network",
   "main": "server.js",
-  "dependencies": {
-    "cluster": "~0.7.7",
-    "crypto": "~0.0.3",
-    "fs": "~0.0.2"
-  },
+  "dependencies": {},
   "devDependencies": {},
   "scripts": {
     "test": "node server.js",
